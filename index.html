@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+  <head>
+    <meta charset="utf-8" />
+    <title>Composition graphique avec p5js</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- p5.js -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
+
+    <style>
+      :root {
+        --panel-bg: #0f1115;
+        --panel-fg: #eaeef7;
+        --muted: #99a1b3;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #000;
+        color: var(--panel-fg);
+        font: 14px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      }
+
+      #ui {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 10;
+        background: color-mix(in srgb, var(--panel-bg) 88%, #000 12%);
+        backdrop-filter: blur(6px);
+        border: 1px solid #222833;
+        border-radius: 12px;
+        padding: 12px 14px;
+        max-width: 360px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+      }
+
+      #ui header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      #ui h2 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      #toggleSettings {
+        appearance: none;
+        border: 1px solid #2a3347;
+        background: #141a24;
+        color: #eef2ff;
+        padding: 6px 8px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      #toggleSettings:hover {
+        background: #1a2231;
+        border-color: #364157;
+      }
+
+      #toggleSettings:active {
+        transform: translateY(1px);
+      }
+
+      /* Contenu repliable */
+      #settingsWrap {
+        overflow: hidden;
+        transition: grid-template-rows .28s ease, opacity .18s ease;
+        display: grid;
+        grid-template-rows: 1fr;
+        opacity: 1;
+        margin-top: 10px;
+      }
+
+      #settingsWrap.collapsed {
+        grid-template-rows: 0fr;
+        opacity: .0;
+      }
+
+      #settingsInner {
+        min-height: 0;
+        /* requis pour le pattern CSS grid collapse */
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+        flex-wrap: wrap;
+      }
+
+      .row label {
+        min-width: 130px;
+        color: var(--muted);
+      }
+
+      .row input[type="number"] {
+        width: 80px;
+      }
+
+      .row input[type="range"] {
+        width: 160px;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #1a1f2a;
+        border: 1px solid #273043;
+        font-size: 12px;
+      }
+
+      .chip .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid #fff3;
+      }
+
+      button,
+      .btn {
+        appearance: none;
+        border: 1px solid #2a3347;
+        background: #141a24;
+        color: #eef2ff;
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform .02s ease, background .2s ease, border-color .2s ease;
+      }
+
+      button:hover {
+        background: #1a2231;
+        border-color: #364157;
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .stack {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .help {
+        color: #93a0bb;
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .sep {
+        height: 1px;
+        background: #1e2431;
+        margin: 10px 0;
+        border-radius: 1px;
+      }
+
+      .notice {
+        font-size: 12px;
+        color: #aab4cc;
+      }
+
+      .tight {
+        margin-top: -2px;
+      }
+
+      #footer {
+        position: fixed;
+        bottom: 10px;
+        left: 16px;
+        z-index: 10;
+        color: #9da8c4;
+        font-size: 12px;
+      }
+
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- GUI -->
+    <div id="ui" role="region" aria-label="Contrôles">
+      <header>
+        <h2>Composition graphique avec p5js</h2>
+        <button id="toggleSettings" aria-expanded="true" aria-controls="settingsWrap"
+          title="Afficher/masquer les paramètres">Masquer</button>
+      </header>
+
+      <!-- WRAP repliable (tout le contenu en-dessous du h2) -->
+      <div id="settingsWrap">
+        <div id="settingsInner">
+          <div class="row">
+            <label for="cols">Grille (colonnes × lignes)</label>
+            <input id="cols" type="number" min="1" max="100" step="1" value="12" />
+            <span>×</span>
+            <input id="rows" type="number" min="1" max="100" step="1" value="12" />
+          </div>
+
+          <div class="row">
+            <label for="padding">Marge dans cellule</label>
+            <input id="padding" type="range" min="0" max="45" step="1" value="12" />
+            <span id="paddingVal" class="notice">12%</span>
+          </div>
+
+          <div class="row">
+            <label for="emptyProb">Cellules vides</label>
+            <input id="emptyProb" type="range" min="0" max="1" step="0.01" value="0.25" />
+            <span id="emptyVal" class="notice">25%</span>
+          </div>
+
+          <div class="row">
+            <label for="bgColor">Couleur de fond</label>
+            <input id="bgColor" type="color" value="#0a0a0a" />
+            <span class="notice">utilisée si pas d’image</span>
+          </div>
+
+          <div class="row">
+            <label>Palette de couleurs</label>
+            <div class="chips" id="paletteChips"></div>
+            <div class="stack tight">
+              <input id="paletteInput" type="text" placeholder="#f94144, #f3722c, #f9c74f…"
+                style="flex:1; min-width:230px" />
+              <button id="applyPalette">Appliquer</button>
+            </div>
+            <div class="stack tight">
+              <input id="colorPicker" type="color" />
+              <button id="addColor">+ Ajouter</button>
+              <button id="shufflePalette">Mélanger</button>
+              <button id="clearPalette">Vider</button>
+            </div>
+            <div class="help">Entrez des hex séparés par des virgules (ex. <span class="notice">#e63946, #457b9d,
+                #a8dadc</span>)</div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <label for="bgImg">Image de fond</label>
+            <input id="bgImg" type="file" accept="image/*" />
+          </div>
+          <div class="help">L’image couvre toute la fenêtre (mode <i>cover</i>). La grille est dessinée par-dessus.
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="stack">
+            <button id="regen">Re-générer</button>
+            <button id="download">Télécharger PNG</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="footer">
+      p5.js — canvas responsive • formes : cercle, demi-cercle, triangle, carré
+    </div>
+
+    <!-- Ton sketch -->
+    <script src="sketch.js"></script>
+
+    <!-- Script du toggle (léger, pas besoin de dépendance) -->
+    <script>
+      (function () {
+        const btn = document.getElementById('toggleSettings');
+        const wrap = document.getElementById('settingsWrap');
+        const key = 'ui.collapsed';
+
+        // état initial depuis localStorage
+        const saved = localStorage.getItem(key);
+        if (saved === 'true') {
+          wrap.classList.add('collapsed');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.textContent = 'Afficher';
+        }
+
+        btn.addEventListener('click', () => {
+          const isCollapsed = wrap.classList.toggle('collapsed');
+          btn.setAttribute('aria-expanded', String(!isCollapsed));
+          btn.textContent = isCollapsed ? 'Afficher' : 'Masquer';
+          localStorage.setItem(key, String(isCollapsed));
+        });
+      })();
+    </script>
+  </body>
+
+</html>
