@@ -1,4 +1,4 @@
-# Outil p5js générateur de compositions graphiques
+# Générateur de compositions graphiques
 
 ![Capture du site](/capture.png)
 
