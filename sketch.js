@@ -117,7 +117,7 @@ function draw() {
       const ori = randomChoice(orientations);
 
       if (shape === 'circle') ellipse(cx, cy, shapeS, shapeS);
-      else if (shape === 'square') { rectMode(CENTER); rect(cx, cy, shapeS, shapeS, 2); }
+      else if (shape === 'square') { rectMode(CENTER); rect(cx, cy, shapeS, shapeS); }
       else if (shape === 'triangle') drawOrientedTriangle(cx, cy, shapeS, ori);
       else if (shape === 'semicircle') drawSemiCircle(cx, cy, shapeS, ori);
     }

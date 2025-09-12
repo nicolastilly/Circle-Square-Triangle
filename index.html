@@ -3,7 +3,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <title>Composition graphique avec p5js</title>
+    <title>Circle Square Triangle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- p5.js -->
@@ -38,13 +38,21 @@
         padding: 12px 14px;
         max-width: 360px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+        user-select: none;
+        /* évite sélectionner pendant le drag */
       }
 
+      /* barre d’en-tête = poignée de drag */
       #ui header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
+        cursor: grab;
+      }
+
+      #ui.dragging header {
+        cursor: grabbing;
       }
 
       #ui h2 {
@@ -88,7 +96,6 @@
 
       #settingsInner {
         min-height: 0;
-        /* requis pour le pattern CSS grid collapse */
       }
 
       .row {
@@ -189,7 +196,7 @@
         position: fixed;
         bottom: 10px;
         left: 16px;
-        z-index: 10;
+        z-index: 5;
         color: #9da8c4;
         font-size: 12px;
       }
@@ -203,13 +210,13 @@
   <body>
     <!-- GUI -->
     <div id="ui" role="region" aria-label="Contrôles">
-      <header>
-        <h2>Composition graphique avec p5js</h2>
+      <header id="uiHeader">
+        <h2>Circle Square Triangle</h2>
         <button id="toggleSettings" aria-expanded="true" aria-controls="settingsWrap"
           title="Afficher/masquer les paramètres">Masquer</button>
       </header>
 
-      <!-- WRAP repliable (tout le contenu en-dessous du h2) -->
+      <!-- Contenu repliable -->
       <div id="settingsWrap">
         <div id="settingsInner">
           <div class="row">
@@ -275,32 +282,104 @@
     </div>
 
     <div id="footer">
-      p5.js — canvas responsive • formes : cercle, demi-cercle, triangle, carré
+      Nicolas Tilly
     </div>
 
     <!-- Ton sketch -->
     <script src="sketch.js"></script>
 
-    <!-- Script du toggle (léger, pas besoin de dépendance) -->
+    <!-- Script toggle -->
     <script>
       (function () {
         const btn = document.getElementById('toggleSettings');
         const wrap = document.getElementById('settingsWrap');
         const key = 'ui.collapsed';
-
-        // état initial depuis localStorage
         const saved = localStorage.getItem(key);
         if (saved === 'true') {
           wrap.classList.add('collapsed');
           btn.setAttribute('aria-expanded', 'false');
           btn.textContent = 'Afficher';
         }
-
         btn.addEventListener('click', () => {
           const isCollapsed = wrap.classList.toggle('collapsed');
           btn.setAttribute('aria-expanded', String(!isCollapsed));
           btn.textContent = isCollapsed ? 'Afficher' : 'Masquer';
           localStorage.setItem(key, String(isCollapsed));
+        });
+      })();
+    </script>
+
+    <!-- Script drag (glisser-déposer du panneau #ui) -->
+    <script>
+      (function () {
+        const panel = document.getElementById('ui');
+        const handle = document.getElementById('uiHeader');
+        const posKey = 'ui.position';
+        let startX = 0, startY = 0;
+        let panelX = 16, panelY = 16;
+        let dragging = false;
+
+        // Restaure la position
+        try {
+          const saved = JSON.parse(localStorage.getItem(posKey) || 'null');
+          if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
+            panelX = saved.x; panelY = saved.y;
+          }
+        } catch (e) { }
+
+        function clamp(val, min, max) { return Math.min(Math.max(val, min), max); }
+
+        function applyPosition() {
+          const maxX = window.innerWidth - panel.offsetWidth - 8;
+          const maxY = window.innerHeight - panel.offsetHeight - 8;
+          panelX = clamp(panelX, 8, Math.max(8, maxX));
+          panelY = clamp(panelY, 8, Math.max(8, maxY));
+          panel.style.left = panelX + 'px';
+          panel.style.top = panelY + 'px';
+        }
+
+        applyPosition();
+
+        // Recalage si on resize la fenêtre
+        window.addEventListener('resize', applyPosition);
+
+        // Démarrage du drag : utiliser Pointer Events pour gérer souris + tactile
+        handle.addEventListener('pointerdown', (e) => {
+          // ne pas démarrer le drag si on clique sur le bouton toggle
+          if (e.target && e.target.id === 'toggleSettings') return;
+
+          dragging = true;
+          panel.classList.add('dragging');
+
+          // position initiale du pointeur
+          startX = e.clientX - panelX;
+          startY = e.clientY - panelY;
+
+          // capture des events jusqu'au pointerup
+          handle.setPointerCapture(e.pointerId);
+        });
+
+        handle.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          panelX = e.clientX - startX;
+          panelY = e.clientY - startY;
+          applyPosition();
+        });
+
+        handle.addEventListener('pointerup', (e) => {
+          if (!dragging) return;
+          dragging = false;
+          panel.classList.remove('dragging');
+          try { localStorage.setItem(posKey, JSON.stringify({ x: panelX, y: panelY })); } catch (err) { }
+          handle.releasePointerCapture(e.pointerId);
+        });
+
+        // Sécurité : si le pointer sort
+        handle.addEventListener('pointercancel', () => {
+          if (!dragging) return;
+          dragging = false;
+          panel.classList.remove('dragging');
+          try { localStorage.setItem(posKey, JSON.stringify({ x: panelX, y: panelY })); } catch (err) { }
         });
       })();
     </script>
