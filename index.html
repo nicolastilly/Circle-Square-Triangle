@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
   <head>
     <meta charset="utf-8" />
@@ -39,10 +39,8 @@
         max-width: 360px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
         user-select: none;
-        /* évite sélectionner pendant le drag */
       }
 
-      /* barre d’en-tête = poignée de drag */
       #ui header {
         display: flex;
         align-items: center;
@@ -79,7 +77,6 @@
         transform: translateY(1px);
       }
 
-      /* Contenu repliable */
       #settingsWrap {
         overflow: hidden;
         transition: grid-template-rows .28s ease, opacity .18s ease;
@@ -208,74 +205,71 @@
   </head>
 
   <body>
-    <!-- GUI -->
-    <div id="ui" role="region" aria-label="Contrôles">
+    <div id="ui" role="region" aria-label="Controls">
       <header id="uiHeader">
         <h2>Circle Square Triangle</h2>
         <button id="toggleSettings" aria-expanded="true" aria-controls="settingsWrap"
-          title="Afficher/masquer les paramètres">Masquer</button>
+          title="Show/Hide settings">Hide</button>
       </header>
 
-      <!-- Contenu repliable -->
       <div id="settingsWrap">
         <div id="settingsInner">
           <div class="row">
-            <label for="cols">Grille (colonnes × lignes)</label>
+            <label for="cols">Grid (columns × rows)</label>
             <input id="cols" type="number" min="1" max="100" step="1" value="12" />
             <span>×</span>
             <input id="rows" type="number" min="1" max="100" step="1" value="12" />
           </div>
 
           <div class="row">
-            <label for="padding">Marge dans cellule</label>
+            <label for="padding">Cell padding</label>
             <input id="padding" type="range" min="0" max="45" step="1" value="12" />
             <span id="paddingVal" class="notice">12%</span>
           </div>
 
           <div class="row">
-            <label for="emptyProb">Cellules vides</label>
+            <label for="emptyProb">Empty cells</label>
             <input id="emptyProb" type="range" min="0" max="1" step="0.01" value="0.25" />
             <span id="emptyVal" class="notice">25%</span>
           </div>
 
           <div class="row">
-            <label for="bgColor">Couleur de fond</label>
+            <label for="bgColor">Background color</label>
             <input id="bgColor" type="color" value="#0a0a0a" />
-            <span class="notice">utilisée si pas d’image</span>
+            <span class="notice">used if no image</span>
           </div>
 
           <div class="row">
-            <label>Palette de couleurs</label>
+            <label>Color palette</label>
             <div class="chips" id="paletteChips"></div>
             <div class="stack tight">
               <input id="paletteInput" type="text" placeholder="#f94144, #f3722c, #f9c74f…"
                 style="flex:1; min-width:230px" />
-              <button id="applyPalette">Appliquer</button>
+              <button id="applyPalette">Apply</button>
             </div>
             <div class="stack tight">
               <input id="colorPicker" type="color" />
-              <button id="addColor">+ Ajouter</button>
-              <button id="shufflePalette">Mélanger</button>
-              <button id="clearPalette">Vider</button>
+              <button id="addColor">+ Add</button>
+              <button id="shufflePalette">Shuffle</button>
+              <button id="clearPalette">Clear</button>
             </div>
-            <div class="help">Entrez des hex séparés par des virgules (ex. <span class="notice">#e63946, #457b9d,
+            <div class="help">Enter hex values separated by commas (e.g. <span class="notice">#e63946, #457b9d,
                 #a8dadc</span>)</div>
           </div>
 
           <div class="sep"></div>
 
           <div class="row">
-            <label for="bgImg">Image de fond</label>
+            <label for="bgImg">Background image</label>
             <input id="bgImg" type="file" accept="image/*" />
           </div>
-          <div class="help">L’image couvre toute la fenêtre (mode <i>cover</i>). La grille est dessinée par-dessus.
-          </div>
+          <div class="help">The image covers the full window (cover). The grid is drawn on top.</div>
 
           <div class="sep"></div>
 
           <div class="stack">
-            <button id="regen">Re-générer</button>
-            <button id="download">Télécharger PNG</button>
+            <button id="regen">Regenerate</button>
+            <button id="download">Download PNG</button>
           </div>
         </div>
       </div>
@@ -285,10 +279,10 @@
       Nicolas Tilly
     </div>
 
-    <!-- Ton sketch -->
+    <!-- Sketch -->
     <script src="sketch.js"></script>
 
-    <!-- Script toggle -->
+    <!-- Toggle script -->
     <script>
       (function () {
         const btn = document.getElementById('toggleSettings');
@@ -298,18 +292,18 @@
         if (saved === 'true') {
           wrap.classList.add('collapsed');
           btn.setAttribute('aria-expanded', 'false');
-          btn.textContent = 'Afficher';
+          btn.textContent = 'Show';
         }
         btn.addEventListener('click', () => {
           const isCollapsed = wrap.classList.toggle('collapsed');
           btn.setAttribute('aria-expanded', String(!isCollapsed));
-          btn.textContent = isCollapsed ? 'Afficher' : 'Masquer';
+          btn.textContent = isCollapsed ? 'Show' : 'Hide';
           localStorage.setItem(key, String(isCollapsed));
         });
       })();
     </script>
 
-    <!-- Script drag (glisser-déposer du panneau #ui) -->
+    <!-- Drag script -->
     <script>
       (function () {
         const panel = document.getElementById('ui');
@@ -319,7 +313,6 @@
         let panelX = 16, panelY = 16;
         let dragging = false;
 
-        // Restaure la position
         try {
           const saved = JSON.parse(localStorage.getItem(posKey) || 'null');
           if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
@@ -339,23 +332,14 @@
         }
 
         applyPosition();
-
-        // Recalage si on resize la fenêtre
         window.addEventListener('resize', applyPosition);
 
-        // Démarrage du drag : utiliser Pointer Events pour gérer souris + tactile
         handle.addEventListener('pointerdown', (e) => {
-          // ne pas démarrer le drag si on clique sur le bouton toggle
           if (e.target && e.target.id === 'toggleSettings') return;
-
           dragging = true;
           panel.classList.add('dragging');
-
-          // position initiale du pointeur
           startX = e.clientX - panelX;
           startY = e.clientY - panelY;
-
-          // capture des events jusqu'au pointerup
           handle.setPointerCapture(e.pointerId);
         });
 
@@ -374,7 +358,6 @@
           handle.releasePointerCapture(e.pointerId);
         });
 
-        // Sécurité : si le pointer sort
         handle.addEventListener('pointercancel', () => {
           if (!dragging) return;
           dragging = false;
