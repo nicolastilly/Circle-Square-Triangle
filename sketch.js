@@ -7,7 +7,7 @@ let params = {
   paddingPct: 12,
   emptyProb: 0.25,
   bgColor: '#0a0a0a',
-  palette: ['#ef476f', '#ffd166', '#06d6a0', '#118ab2', '#8338ec'],
+  palette: ['#ffffff', '#ff0000', '#0015ff', '#20ed09', '#fbff00'],
 };
 
 let bgImg = null;     // image de fond (p5.Image)
