@@ -8,12 +8,13 @@ This tool is coded with p5js and is used to create a graphic composition of simp
 
 The tool's parameters are as follows:
 
+- Add an image to the background
 - Grid density (columns and rows)
 - Addition and removal of background colors for shapes
 - Addition or removal of empty spaces in the grid
-- Downloading of the final composition
 - Drag and drop the settings window
 - Choose all 4 shapes or just one
+- Downloading of the final composition
   
 
 ![video](/shapes.gif)
