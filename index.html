@@ -239,6 +239,21 @@
             <span class="notice">used if no image</span>
           </div>
 
+          <div class="sep"></div>
+
+          <div class="row">
+            <label for="shapeMode">Select a shape</label>
+            <select id="shapeMode">
+              <option value="any" selected>Any (random)</option>
+              <option value="circle">Circle</option>
+              <option value="triangle">Triangle</option>
+              <option value="square">Square</option>
+              <option value="semicircle">Semi-circle</option>
+            </select>
+          </div>
+
+          <div class="sep"></div>
+
           <div class="row">
             <label>Color palette</label>
             <div class="chips" id="paletteChips"></div>
@@ -257,6 +272,7 @@
                 #a8dadc</span>)</div>
           </div>
 
+
           <div class="sep"></div>
 
           <div class="row">
@@ -271,13 +287,21 @@
             <button id="regen">Regenerate</button>
             <button id="download">Download PNG</button>
           </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            A web based tool by Nicolas Tilly. 2025
+          </div>
+
+
         </div>
       </div>
     </div>
 
-    <div id="footer">
+    <!-- <div id="footer">
       Nicolas Tilly
-    </div>
+    </div> -->
 
     <!-- Sketch -->
     <script src="sketch.js"></script>

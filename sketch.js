@@ -8,6 +8,7 @@ let params = {
   emptyProb: 0.25,
   bgColor: '#0a0a0a',
   palette: ['#ffffff', '#ff0000', '#0015ff', '#20ed09', '#fbff00'],
+  shapeMode: 'any',
 };
 
 let bgImg = null;     // image de fond (p5.Image)
@@ -112,7 +113,17 @@ function draw() {
       const cy = gy * cellH + cellH / 2;
       if (params.palette.length === 0) continue;
       fill(randomChoice(params.palette));
-      const shape = randomChoice(['circle', 'semicircle', 'triangle', 'square']);
+      //const shape = randomChoice(['circle', 'semicircle', 'triangle', 'square']);
+
+      let shape;
+      if (params.shapeMode === 'any') {
+        shape = randomChoice(['circle', 'semicircle', 'triangle', 'square']);
+      } else {
+        shape = params.shapeMode; // force a single shape
+      }
+
+
+
       const orientations = [0, 90, 180, 270];
       const ori = randomChoice(orientations);
 
@@ -138,6 +149,8 @@ function buildGUI() {
   const bgColorEl = document.getElementById('bgColor');
   const bgImgEl = document.getElementById('bgImg');
 
+  const shapeModeEl = document.getElementById('shapeMode');
+
   const paletteChips = document.getElementById('paletteChips');
   const paletteInput = document.getElementById('paletteInput');
   const applyPaletteBtn = document.getElementById('applyPalette');
@@ -156,6 +169,9 @@ function buildGUI() {
   emptyEl.value = params.emptyProb;
   emptyVal.textContent = Math.round(params.emptyProb * 100) + '%';
   bgColorEl.value = params.bgColor;
+
+  if (shapeModeEl) shapeModeEl.value = params.shapeMode;
+
   renderPaletteChips();
 
   colsEl.addEventListener('input', () => { params.cols = Number(colsEl.value); triggerRedraw(); });
@@ -163,6 +179,13 @@ function buildGUI() {
   paddingEl.addEventListener('input', () => { params.paddingPct = Number(paddingEl.value); paddingVal.textContent = params.paddingPct + '%'; triggerRedraw(); });
   emptyEl.addEventListener('input', () => { params.emptyProb = Number(emptyEl.value); emptyVal.textContent = Math.round(params.emptyProb * 100) + '%'; triggerRedraw(); });
   bgColorEl.addEventListener('input', () => { params.bgColor = bgColorEl.value; triggerRedraw(); });
+
+  if (shapeModeEl) {
+    shapeModeEl.addEventListener('change', () => {
+      params.shapeMode = shapeModeEl.value;
+      triggerRedraw();
+    });
+  }
 
   bgImgEl.addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
