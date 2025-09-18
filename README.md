@@ -19,4 +19,4 @@ The tool's parameters are as follows:
 
 ![video](/motion.gif)
 
-(The background image was created using the incredible [Gradientor](https://gradientor.afterimage.cc/) tool.)
+(The background image was created using the incredible [Gradientor](https://gradientor.afterimage.cc/) tool by Anatoly Grashchenko.)
