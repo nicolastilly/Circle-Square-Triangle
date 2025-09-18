@@ -17,4 +17,6 @@ The tool's parameters are as follows:
 - Downloading of the final composition
   
 
-![video](/shapes.gif)
+![video](/motion.gif)
+
+(The background image was created using the incredible [Gradientor](https://gradientor.afterimage.cc/) tool.)
