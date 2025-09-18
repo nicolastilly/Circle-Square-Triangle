@@ -13,5 +13,7 @@ The tool's parameters are as follows:
 - Addition or removal of empty spaces in the grid
 - Downloading of the final composition
 - Drag and drop the settings window
+- Choose all 4 shapes or just one
+  
 
 ![video](/shapes.gif)
