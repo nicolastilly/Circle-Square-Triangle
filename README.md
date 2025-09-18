@@ -14,4 +14,4 @@ The tool's parameters are as follows:
 - Downloading of the final composition
 - Drag and drop the settings window
 
-![](video.mp4)
+![video](video.mp4)
