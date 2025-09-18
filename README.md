@@ -1,6 +1,6 @@
 # Circle Square Triangle
 
-Graphic composition generator inspired by Bruno Munari's book of the same name.
+Graphic composition generator inspired by [Bruno Munari's](https://archive.org/details/brunomunarisquar0000muna) book of the same name.
 
 ![Capture du site](/capture.png)
 
