@@ -2,7 +2,7 @@
 
 Graphic composition generator inspired by [Bruno Munari's](https://archive.org/details/brunomunarisquar0000muna) book of the same name.
 
-![Capture du site](/capture.png)
+![Capture du site](/screen.jpeg)
 
 This tool is coded with p5js and is used to create a graphic composition of simple colored shapes with an image in the background. The size of the composition depends on the size of the browser window.
 
