@@ -20,3 +20,23 @@ The tool's parameters are as follows:
 ![video](/motion.gif)
 
 (The background image was created using the incredible [Gradientor](https://gradientor.afterimage.cc/) tool by Anatoly Grashchenko.)
+
+## Authors
+
+- [Nicolas Tilly](https://nicolastilly.fr/)
+
+
+## 🚀 About Me
+I'm a designer, creative coder and teacher in art school.
+
+
+## Roadmap
+
+- Additional browser support
+
+- Add more features
+
+
+## Feedback
+
+If you have any feedback, please reach out to us at nicolas@nicolastilly.fr
