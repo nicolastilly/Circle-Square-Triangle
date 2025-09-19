@@ -4,6 +4,8 @@ Graphic composition generator inspired by [Bruno Munari's](https://archive.org/d
 
 ![Capture du site](/screen.jpeg)
 
+## The tool
+
 This tool is coded with p5js and is used to create a graphic composition of simple colored shapes with an image in the background. The size of the composition depends on the size of the browser window.
 
 The tool's parameters are as follows:
@@ -26,7 +28,7 @@ The tool's parameters are as follows:
 - [Nicolas Tilly](https://nicolastilly.fr/)
 
 
-## 🚀 About Me
+## About Me
 I'm a designer, creative coder and teacher in art school.
 
 
@@ -39,4 +41,4 @@ I'm a designer, creative coder and teacher in art school.
 
 ## Feedback
 
-If you have any feedback, please reach out to us at nicolas@nicolastilly.fr
+If you have any feedback, please reach out to me at nicolas@nicolastilly.fr
