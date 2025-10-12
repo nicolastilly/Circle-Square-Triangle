@@ -6,11 +6,6 @@
     <title>Circle Square Triangle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="shortcut icon" href="favicon.ico">
-
     <!-- p5.js -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
 
@@ -205,12 +200,6 @@
 
       canvas {
         display: block;
-        border-radius: 8px;
-      }
-
-      body {
-        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-        min-height: 100vh;
       }
     </style>
   </head>
@@ -253,39 +242,13 @@
           <div class="sep"></div>
 
           <div class="row">
-            <label for="presetSelector">Presets</label>
-            <select id="presetSelector">
-              <option value="0" selected>The worm</option>
-              <option value="1">The gradient</option>
-              <option value="2">dithergrid</option>
-              <option value="3">Custom</option>
-            </select>
-          </div>
-
-          <div class="sep"></div>
-
-          <div class="row">
-            <label for="canvasSize">Canvas size</label>
-            <select id="canvasSize">
-              <option value="0" selected>HD Landscape (1920×1080)</option>
-              <option value="1">Portrait (1080×1920)</option>
-              <option value="2">Square (1080×1080)</option>
-              <option value="3">4:5 (1080×1350)</option>
-            </select>
-          </div>
-          <div class="row">
-            <span id="canvasSizeInfo" class="notice">Current: 1920×1080 pixels</span>
-          </div>
-
-          <div class="sep"></div>
-
-          <div class="row">
             <label for="shapeMode">Select a shape</label>
             <select id="shapeMode">
               <option value="any" selected>Any (random)</option>
               <option value="circle">Circle</option>
               <option value="triangle">Triangle</option>
               <option value="square">Square</option>
+              <option value="semicircle">Semi-circle</option>
             </select>
           </div>
 
@@ -328,8 +291,7 @@
           <div class="sep"></div>
 
           <div class="row">
-            A web based tool by Nicolas Tilly.<br>
-            Version 2.0.0
+            A web based tool by Nicolas Tilly. 2025
           </div>
 
 
