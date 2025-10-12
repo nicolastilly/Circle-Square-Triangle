@@ -14,6 +14,9 @@
     <!-- p5.js -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
 
+    <!-- p5.capture for video recording -->
+    <script src="https://cdn.jsdelivr.net/npm/p5.capture@1.6.0/dist/p5.capture.umd.min.js"></script>
+
     <style>
       :root {
         --panel-bg: #0f1115;
@@ -164,6 +167,42 @@
 
       button:active {
         transform: translateY(1px);
+      }
+
+      /* Animation du bouton d'enregistrement */
+      #recordVideo {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #141a24;
+        --progress: 0%;
+      }
+
+      #recordVideo.recording {
+        color: #ffffff;
+        cursor: not-allowed;
+        background: #141a24;
+        /* Fond de base */
+      }
+
+      #recordVideo::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: var(--progress, 0%);
+        background: linear-gradient(90deg, #ff4444, #ff6666);
+        transition: none;
+        /* Pas de transition CSS, contrôlé par JS */
+        z-index: 0;
+        /* Au-dessus du fond mais sous le texte */
+      }
+
+      #recordVideo span {
+        position: relative;
+        z-index: 1;
+        /* Texte au-dessus de l'animation */
       }
 
       .stack {
@@ -323,6 +362,7 @@
           <div class="stack">
             <button id="regen">Regenerate</button>
             <button id="download">Download PNG</button>
+            <button id="recordVideo"><span>Record 10s Video</span></button>
           </div>
 
           <div class="sep"></div>

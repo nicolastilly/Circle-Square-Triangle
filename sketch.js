@@ -1,4 +1,16 @@
 // -------------------------
+// Configuration p5.capture (AVANT setup)
+// -------------------------
+P5Capture.setDefaultOptions({
+  format: "mp4",
+  framerate: 30,
+  quality: 0.92,
+  disableUi: true,
+  verbose: false,
+  disableScaling: false
+});
+
+// -------------------------
 // Paramètres & état global
 // -------------------------
 let params = {
@@ -60,6 +72,19 @@ let presets = [
 
 let bgImg = null;     // image de fond (p5.Image)
 let dirty = true;     // si true => redraw()
+
+// Variables pour l'animation vidéo
+let isRecording = false;
+let recordingStartFrame = 0;
+let recordingStartTime = 0;
+let animationParams = {
+  originalPadding: 0,
+  originalEmpty: 0,
+  originalShape: 'any',
+  originalCols: 12,
+  originalRows: 12
+};
+let capture = null;
 
 // -------------------------
 // Utilitaires
@@ -286,6 +311,159 @@ function triggerRedraw() {
   redraw();
 }
 
+function updateRecordingProgress(percentage) {
+  const recordBtn = document.getElementById('recordVideo');
+  if (recordBtn) {
+    // Mettre à jour la largeur de la barre de progression
+    recordBtn.style.setProperty('--progress', `${percentage}%`);
+  }
+}
+
+// -------------------------
+// Fonctions de capture vidéo
+// -------------------------
+function hideP5CaptureUI() {
+  // Masquer toute interface p5.capture qui pourrait apparaître
+  setTimeout(() => {
+    const p5CaptureElements = document.querySelectorAll('[id*="p5-capture"], [class*="p5-capture"], [data-p5-capture]');
+    p5CaptureElements.forEach(element => {
+      element.style.display = 'none';
+      element.style.visibility = 'hidden';
+    });
+
+    // Masquer également les éléments avec des classes génériques de p5.capture
+    const genericElements = document.querySelectorAll('div[style*="position: fixed"], div[style*="z-index"]');
+    genericElements.forEach(element => {
+      if (element.textContent && (element.textContent.includes('record') || element.textContent.includes('capture'))) {
+        element.style.display = 'none';
+      }
+    });
+  }, 100);
+}
+function startVideoRecording() {
+  if (isRecording) return;
+
+  // S'assurer que l'interface p5.capture est masquée
+  hideP5CaptureUI();
+
+  // Sauvegarder les paramètres originaux
+  animationParams.originalPadding = params.paddingPct;
+  animationParams.originalEmpty = params.emptyProb;
+  animationParams.originalShape = params.shapeMode;
+  animationParams.originalCols = params.cols;
+  animationParams.originalRows = params.rows;
+
+  // Obtenir la taille de canvas cible
+  const targetSize = getTargetCanvasSize();
+
+  // Configurer et démarrer l'enregistrement directement en MP4
+  capture = P5Capture.getInstance();
+  capture.start({
+    format: "mp4",
+    framerate: 30,
+    duration: 300, // EXACTEMENT 300 frames = 10 secondes à 30 fps
+    width: targetSize.width,
+    height: targetSize.height,
+    quality: 0.95,
+    bitrate: 15000, // Bitrate très élevé pour une qualité maximale
+    verbose: true // Activer pour déboguer la durée
+  });
+
+  isRecording = true;
+  recordingStartFrame = frameCount;
+  recordingStartTime = millis(); // Enregistrer le temps de début en millisecondes
+
+  // Activer le mode loop pour l'animation avec framerate contrôlé
+  frameRate(30); // Forcer 30 fps exactement
+
+  // Forcer la synchronisation avec p5.capture
+  console.log('Démarrage enregistrement: 300 frames à 30 fps = 10 secondes (bitrate 15000 kbps)');
+
+  loop();
+
+  // Mettre à jour le bouton avec animation
+  const recordBtn = document.getElementById('recordVideo');
+  if (recordBtn) {
+    recordBtn.innerHTML = '<span>Recording...</span>';
+    recordBtn.disabled = true;
+    recordBtn.classList.add('recording');
+
+    // Initialiser la barre de progression à 0%
+    updateRecordingProgress(0);
+  }
+
+  console.log('Démarrage de l\'enregistrement vidéo...');
+}
+
+function stopVideoRecording() {
+  if (!isRecording) return;
+
+  isRecording = false;
+
+  // Arrêter l'enregistrement
+  if (capture) {
+    capture.stop();
+  }
+
+  // Restaurer les paramètres originaux
+  params.paddingPct = animationParams.originalPadding;
+  params.emptyProb = animationParams.originalEmpty;
+  params.shapeMode = animationParams.originalShape;
+  params.cols = animationParams.originalCols;
+  params.rows = animationParams.originalRows;
+
+  // Mettre à jour l'interface
+  updateGUIFromParams();
+
+  // Revenir au mode noLoop
+  noLoop();
+  dirty = true;
+  redraw();
+
+  // Restaurer le bouton et supprimer l'animation
+  const recordBtn = document.getElementById('recordVideo');
+  if (recordBtn) {
+    recordBtn.innerHTML = '<span>Record 10s Video</span>';
+    recordBtn.disabled = false;
+    recordBtn.classList.remove('recording'); // Arrêter l'animation de remplissage
+    updateRecordingProgress(0); // Réinitialiser la barre de progression
+  }
+
+  console.log('Enregistrement vidéo terminé !');
+}
+
+function animateParametersByFrames(currentFrame, totalFrames) {
+  const progress = currentFrame / totalFrames; // Progress de 0 à 1
+
+  // Animation cyclique du padding (5% à 45%)
+  const paddingRange = 40; // 45 - 5
+  const paddingBase = 5;
+  params.paddingPct = paddingBase + (Math.sin(progress * Math.PI * 4) * 0.5 + 0.5) * paddingRange;
+
+  // Animation cyclique des empty cells (0.05 à 0.85)
+  const emptyRange = 0.8; // 0.85 - 0.05
+  const emptyBase = 0.05;
+  params.emptyProb = emptyBase + (Math.cos(progress * Math.PI * 3) * 0.5 + 0.5) * emptyRange;
+
+  // Animation des colonnes avec range plus important (4 à 30)
+  const colsRange = 26; // 30 - 4
+  const colsBase = 4;
+  params.cols = Math.round(colsBase + (Math.sin(progress * Math.PI * 2.5) * 0.5 + 0.5) * colsRange);
+
+  // Animation des lignes avec range plus important (4 à 30)
+  const rowsRange = 26; // 30 - 4
+  const rowsBase = 4;
+  params.rows = Math.round(rowsBase + (Math.cos(progress * Math.PI * 2.2) * 0.5 + 0.5) * rowsRange);
+
+  // MÉLANGE CONSTANT DES 3 FORMES - pas de changement séquentiel
+  params.shapeMode = 'any'; // Toujours en mode mélange
+
+  // Régénérer aléatoirement toutes les 20 frames (plus fréquent pour plus de variation)
+  if (currentFrame % 20 === 0) {
+    randomSeed(Math.floor(Math.random() * 1e9));
+  }
+}
+
 function downloadCanvasAtTargetSize() {
   const targetSize = getTargetCanvasSize();
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -401,12 +579,18 @@ function drawOrientedTriangle(cx, cy, s, orientationDeg) {
 function setup() {
   pixelDensity(2);
 
+  // Définir le framerate à 30 fps
+  frameRate(30);
+
   // Créer le canvas avec la taille par défaut
   const defaultSize = canvasSizes[0];
   createCanvas(defaultSize.width, defaultSize.height);
   noLoop();
 
   buildGUI();
+
+  // Masquer toute interface p5.capture qui pourrait apparaître
+  hideP5CaptureUI();
 
   // Appliquer le preset par défaut
   applyPreset(0);
@@ -428,7 +612,32 @@ function windowResized() {
 }
 
 function draw() {
-  if (!dirty) return;
+  // Gérer l'animation pendant l'enregistrement
+  if (isRecording) {
+    const recordingFrame = frameCount - recordingStartFrame;
+    const totalFrames = 300; // 10 secondes à 30 fps = 300 frames exactement
+
+    if (recordingFrame >= totalFrames) {
+      console.log(`Arrêt enregistrement après ${recordingFrame} frames`);
+      stopVideoRecording();
+    } else {
+      // Animer les paramètres basé sur les frames pour synchroniser avec p5.capture
+      animateParametersByFrames(recordingFrame, totalFrames);
+
+      // Mettre à jour la barre de progression en temps réel
+      const progress = recordingFrame / totalFrames;
+      updateRecordingProgress(progress * 100);
+
+      dirty = true; // Forcer le redraw pendant l'enregistrement
+
+      // Log du progrès toutes les 30 frames (chaque seconde)
+      if (recordingFrame % 30 === 0) {
+        console.log(`Frame ${recordingFrame}/${totalFrames} - ${Math.round(recordingFrame / 30)}s/${Math.round(totalFrames / 30)}s - ${Math.round(progress * 100)}%`);
+      }
+    }
+  }
+
+  if (!dirty && !isRecording) return;
   clear();
 
   if (bgImg) {
@@ -512,6 +721,7 @@ function buildGUI() {
 
   const regenBtn = document.getElementById('regen');
   const downloadBtn = document.getElementById('download');
+  const recordVideoBtn = document.getElementById('recordVideo');
 
   colsEl.value = params.cols;
   rowsEl.value = params.rows;
@@ -586,6 +796,10 @@ function buildGUI() {
 
   downloadBtn.addEventListener('click', () => {
     downloadCanvasAtTargetSize();
+  });
+
+  recordVideoBtn.addEventListener('click', () => {
+    startVideoRecording();
   });
 
 
