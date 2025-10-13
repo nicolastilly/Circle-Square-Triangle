@@ -255,6 +255,33 @@
         min-height: 100vh;
       }
 
+      /* Intro splash screen */
+      #introSplash {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+
+      #introSplash img {
+        max-width: 80%;
+        max-height: 80%;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      }
+
+      #introSplash.fade-out {
+        opacity: 0;
+      }
+
       /* Styles pour mobile */
       @media (max-width: 768px) {
         #ui {
@@ -303,6 +330,11 @@
   </head>
 
   <body>
+    <!-- Intro splash screen -->
+    <div id="introSplash">
+      <img id="introImage" src="" alt="Intro" />
+    </div>
+
     <div id="ui" role="region" aria-label="Controls">
       <header id="uiHeader">
         <h2>Circle Square Triangle</h2>
@@ -428,6 +460,39 @@
     <!-- <div id="footer">
       Nicolas Tilly
     </div> -->
+
+    <!-- Intro script -->
+    <script>
+      (function () {
+        // Images disponibles dans le dossier intro
+        const introImages = [
+          'intro/circle.jpeg',
+          'intro/square.jpeg',
+          'intro/triangle.jpeg'
+        ];
+
+        // Choisir une image au hasard
+        const randomImage = introImages[Math.floor(Math.random() * introImages.length)];
+
+        // Définir l'image source
+        const introImg = document.getElementById('introImage');
+        const introSplash = document.getElementById('introSplash');
+
+        if (introImg && introSplash) {
+          introImg.src = randomImage;
+
+          // Attendre 1 seconde puis commencer le fade
+          setTimeout(() => {
+            introSplash.classList.add('fade-out');
+
+            // Supprimer complètement l'élément après le fade (0.5s)
+            setTimeout(() => {
+              introSplash.remove();
+            }, 500);
+          }, 1000);
+        }
+      })();
+    </script>
 
     <!-- Sketch -->
     <script src="sketch.js"></script>
