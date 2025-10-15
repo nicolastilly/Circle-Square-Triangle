@@ -3,7 +3,7 @@
 // -------------------------
 P5Capture.setDefaultOptions({
   format: "mp4",
-  framerate: 30,
+  framerate: 10,
   quality: 0.92,
   disableUi: true,
   verbose: false,
@@ -64,14 +64,16 @@ let presets = [
     shape: 'any',
     paddingPct: 12,
     emptyProb: 0.25,
-    fillColor: null, // Utilise la palette multicolore
-    bgImagePath: null, // Utilise la couleur de fond
+    fillColor: null, // Utilise la palette multicolore par défaut
+    bgImagePath: null, // Utilise la couleur de fond par défaut
     isCustom: true
   }
 ];
 
 let bgImg = null;     // image de fond (p5.Image)
 let dirty = true;     // si true => redraw()
+let fixedSeed = 12345; // Seed fixe pour préserver les formes
+let useFixedSeed = false; // Flag pour utiliser la seed fixe
 
 // Variables pour l'animation vidéo
 let isRecording = false;
@@ -114,7 +116,7 @@ function normalizeHexList(list) {
 }
 
 function randomChoice(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[floor(random() * arr.length)];
 }
 
 // -------------------------
@@ -216,16 +218,16 @@ function applyPreset(presetIndex) {
 
   const preset = presets[presetIndex];
   params.currentPreset = presetIndex;
+
+  // Appliquer les valeurs du preset
   params.shapeMode = preset.shape;
   params.paddingPct = preset.paddingPct;
   params.emptyProb = preset.emptyProb;
 
   // Gérer la palette selon le type de preset
   if (preset.isCustom) {
-    // Pour Custom, garder la palette existante ou utiliser la palette par défaut
-    if (params.palette.length === 0) {
-      params.palette = ['#ffffff', '#ff0000', '#0015ff', '#20ed09', '#fbff00'];
-    }
+    // Pour Custom, utiliser la palette par défaut des params globaux
+    params.palette = ['#ffffff', '#ff0000', '#0015ff', '#20ed09', '#fbff00'];
   } else {
     // Pour les autres presets, utiliser une seule couleur
     params.palette = [preset.fillColor];
@@ -300,13 +302,24 @@ function renderPaletteChips() {
     chip.addEventListener('click', () => {
       params.palette.splice(idx, 1);
       renderPaletteChips();
-      triggerRedraw();
+      triggerColorOnlyRedraw();
     });
     paletteChips.appendChild(chip);
   });
 }
 
 function triggerRedraw() {
+  useFixedSeed = false;
+  dirty = true;
+  redraw();
+}
+
+function triggerColorOnlyRedraw() {
+  if (!useFixedSeed) {
+    // Premier usage : générer une nouvelle seed fixe
+    fixedSeed = Math.floor(Math.random() * 1000000);
+    useFixedSeed = true;
+  }
   dirty = true;
   redraw();
 }
@@ -360,12 +373,12 @@ function startVideoRecording() {
   capture = P5Capture.getInstance();
   capture.start({
     format: "mp4",
-    framerate: 30,
-    duration: 300, // EXACTEMENT 300 frames = 10 secondes à 30 fps
+    framerate: 10,
+    duration: 100, // EXACTEMENT 100 frames = 10 secondes à 10 fps
     width: targetSize.width,
     height: targetSize.height,
     quality: 0.95,
-    bitrate: 15000, // Bitrate très élevé pour une qualité maximale
+    bitrate: 5000, // Bitrate adapté pour 10 fps
     verbose: true // Activer pour déboguer la durée
   });
 
@@ -374,10 +387,10 @@ function startVideoRecording() {
   recordingStartTime = millis(); // Enregistrer le temps de début en millisecondes
 
   // Activer le mode loop pour l'animation avec framerate contrôlé
-  frameRate(30); // Forcer 30 fps exactement
+  frameRate(10); // Forcer 10 fps exactement
 
   // Forcer la synchronisation avec p5.capture
-  console.log('Démarrage enregistrement: 300 frames à 30 fps = 10 secondes (bitrate 15000 kbps)');
+  console.log('Démarrage enregistrement: 100 frames à 10 fps = 10 secondes (bitrate 5000 kbps)');
 
   loop();
 
@@ -455,8 +468,8 @@ function animateParametersByFrames(currentFrame, totalFrames) {
   const rowsBase = 4;
   params.rows = Math.round(rowsBase + (Math.cos(progress * Math.PI * 2.2) * 0.5 + 0.5) * rowsRange);
 
-  // MÉLANGE CONSTANT DES 3 FORMES - pas de changement séquentiel
-  params.shapeMode = 'any'; // Toujours en mode mélange
+  // Préserver le mode de forme choisi par l'utilisateur
+  // (ne plus forcer le mode 'any')
 
   // Régénérer aléatoirement toutes les 20 frames (plus fréquent pour plus de variation)
   if (currentFrame % 20 === 0) {
@@ -481,6 +494,11 @@ function downloadCanvasAtTargetSize() {
 function drawCompositionOnCanvas(canvas, w, h) {
   canvas.clear();
 
+  // Utiliser la seed fixe si on préserve les formes
+  if (useFixedSeed) {
+    randomSeed(fixedSeed);
+  }
+
   if (bgImg) {
     drawImageCoverOnCanvas(canvas, bgImg, w, h);
   } else {
@@ -499,7 +517,7 @@ function drawCompositionOnCanvas(canvas, w, h) {
 
   for (let gy = 0; gy < rows; gy++) {
     for (let gx = 0; gx < cols; gx++) {
-      if (Math.random() < params.emptyProb) continue;
+      if (random() < params.emptyProb) continue;
       const cx = gx * cellW + cellW / 2;
       const cy = gy * cellH + cellH / 2;
       if (params.palette.length === 0) continue;
@@ -612,10 +630,15 @@ function windowResized() {
 }
 
 function draw() {
+  // Utiliser la seed fixe si on préserve les formes
+  if (useFixedSeed) {
+    randomSeed(fixedSeed);
+  }
+
   // Gérer l'animation pendant l'enregistrement
   if (isRecording) {
     const recordingFrame = frameCount - recordingStartFrame;
-    const totalFrames = 300; // 10 secondes à 30 fps = 300 frames exactement
+    const totalFrames = 100; // 10 secondes à 10 fps = 100 frames exactement
 
     if (recordingFrame >= totalFrames) {
       console.log(`Arrêt enregistrement après ${recordingFrame} frames`);
@@ -630,9 +653,9 @@ function draw() {
 
       dirty = true; // Forcer le redraw pendant l'enregistrement
 
-      // Log du progrès toutes les 30 frames (chaque seconde)
-      if (recordingFrame % 30 === 0) {
-        console.log(`Frame ${recordingFrame}/${totalFrames} - ${Math.round(recordingFrame / 30)}s/${Math.round(totalFrames / 30)}s - ${Math.round(progress * 100)}%`);
+      // Log du progrès toutes les 10 frames (chaque seconde)
+      if (recordingFrame % 10 === 0) {
+        console.log(`Frame ${recordingFrame}/${totalFrames} - ${Math.round(recordingFrame / 10)}s/${Math.round(totalFrames / 10)}s - ${Math.round(progress * 100)}%`);
       }
     }
   }
@@ -658,7 +681,7 @@ function draw() {
 
   for (let gy = 0; gy < rows; gy++) {
     for (let gx = 0; gx < cols; gx++) {
-      if (Math.random() < params.emptyProb) continue;
+      if (random() < params.emptyProb) continue;
       const cx = gx * cellW + cellW / 2;
       const cy = gy * cellH + cellH / 2;
       if (params.palette.length === 0) continue;
@@ -672,7 +695,6 @@ function draw() {
         // Pour les autres presets, utiliser la première couleur
         fill(params.palette[0]);
       }
-      //const shape = randomChoice(['circle', 'semicircle', 'triangle', 'square']);
 
       let shape;
       if (params.shapeMode === 'any') {
@@ -680,8 +702,6 @@ function draw() {
       } else {
         shape = params.shapeMode; // force a single shape
       }
-
-
 
       const orientations = [0, 90, 180, 270];
       const ori = randomChoice(orientations);
@@ -739,7 +759,7 @@ function buildGUI() {
   rowsEl.addEventListener('input', () => { params.rows = Number(rowsEl.value); triggerRedraw(); });
   paddingEl.addEventListener('input', () => { params.paddingPct = Number(paddingEl.value); paddingVal.textContent = params.paddingPct + '%'; triggerRedraw(); });
   emptyEl.addEventListener('input', () => { params.emptyProb = Number(emptyEl.value); emptyVal.textContent = Math.round(params.emptyProb * 100) + '%'; triggerRedraw(); });
-  bgColorEl.addEventListener('input', () => { params.bgColor = bgColorEl.value; triggerRedraw(); });
+  bgColorEl.addEventListener('input', () => { params.bgColor = bgColorEl.value; triggerColorOnlyRedraw(); });
 
   if (shapeModeEl) {
     shapeModeEl.addEventListener('change', () => {
@@ -771,26 +791,26 @@ function buildGUI() {
   applyPaletteBtn.addEventListener('click', () => {
     const parts = (paletteInput.value || '').split(',');
     const list = normalizeHexList(parts);
-    if (list.length) { params.palette = list; renderPaletteChips(); triggerRedraw(); }
+    if (list.length) { params.palette = list; renderPaletteChips(); triggerColorOnlyRedraw(); }
   });
 
   addColorBtn.addEventListener('click', () => {
     const c = colorPicker.value;
     const list = normalizeHexList([c]);
-    if (list.length) { params.palette.push(list[0]); params.palette = [...new Set(params.palette)]; renderPaletteChips(); triggerRedraw(); }
+    if (list.length) { params.palette.push(list[0]); params.palette = [...new Set(params.palette)]; renderPaletteChips(); triggerColorOnlyRedraw(); }
   });
 
   shufflePaletteBtn.addEventListener('click', () => {
     params.palette = shuffleArray(params.palette.slice());
-    renderPaletteChips(); triggerRedraw();
+    renderPaletteChips(); triggerColorOnlyRedraw();
   });
 
   clearPaletteBtn.addEventListener('click', () => {
-    params.palette = []; renderPaletteChips(); triggerRedraw();
+    params.palette = []; renderPaletteChips(); triggerColorOnlyRedraw();
   });
 
   regenBtn.addEventListener('click', () => {
-    randomSeed(Math.floor(Math.random() * 1e9));
+    useFixedSeed = false;
     dirty = true; redraw();
   });
 

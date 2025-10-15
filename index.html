@@ -1,608 +1,654 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="utf-8" />
-  <title>Circle Square Triangle</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <meta charset="utf-8" />
+    <title>Circle Square Triangle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="shortcut icon" href="favicon.ico">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.ico">
 
-  <!-- p5.js -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
+    <!-- p5.js -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
 
-  <!-- p5.capture for video recording -->
-  <script src="https://cdn.jsdelivr.net/npm/p5.capture@1.6.0/dist/p5.capture.umd.min.js"></script>
+    <!-- p5.capture for video recording -->
+    <script src="https://cdn.jsdelivr.net/npm/p5.capture@1.6.0/dist/p5.capture.umd.min.js"></script>
 
-  <style>
-    :root {
-      --panel-bg: #0f1115;
-      --panel-fg: #eaeef7;
-      --muted: #99a1b3;
-    }
+    <style>
+      :root {
+        --panel-bg: #0f1115;
+        --panel-fg: #eaeef7;
+        --muted: #99a1b3;
+      }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #000;
-      color: var(--panel-fg);
-      font: 14px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow: hidden;
-    }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #000;
+        color: var(--panel-fg);
+        font: 14px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        overflow: hidden;
+      }
 
-    a {
-      color: white;
-    }
+      a {
+        color: white;
+      }
 
-    #ui {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 10;
-      background: color-mix(in srgb, var(--panel-bg) 88%, #000 12%);
-      backdrop-filter: blur(6px);
-      border: 1px solid #222833;
-      border-radius: 12px;
-      padding: 12px 14px;
-      max-width: 360px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
-      user-select: none;
-      max-height: calc(100vh - 32px);
-      overflow-y: auto;
-    }
-
-    #ui header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      cursor: grab;
-    }
-
-    #ui.dragging header {
-      cursor: grabbing;
-    }
-
-    #ui h2 {
-      margin: 0;
-      font-size: 16px;
-    }
-
-    #toggleSettings {
-      appearance: none;
-      border: 1px solid #2a3347;
-      background: #141a24;
-      color: #eef2ff;
-      padding: 6px 8px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    #toggleSettings:hover {
-      background: #1a2231;
-      border-color: #364157;
-    }
-
-    #toggleSettings:active {
-      transform: translateY(1px);
-    }
-
-    #settingsWrap {
-      overflow: hidden;
-      transition: grid-template-rows .28s ease, opacity .18s ease;
-      display: grid;
-      grid-template-rows: 1fr;
-      opacity: 1;
-      margin-top: 10px;
-    }
-
-    #settingsWrap.collapsed {
-      grid-template-rows: 0fr;
-      opacity: .0;
-    }
-
-    #settingsInner {
-      min-height: 0;
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 8px 0;
-      flex-wrap: wrap;
-    }
-
-    .row label {
-      min-width: 130px;
-      color: var(--muted);
-    }
-
-    .row input[type="number"] {
-      width: 80px;
-    }
-
-    .row input[type="range"] {
-      width: 160px;
-    }
-
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #1a1f2a;
-      border: 1px solid #273043;
-      font-size: 12px;
-    }
-
-    .chip .swatch {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 1px solid #fff3;
-    }
-
-    button,
-    .btn {
-      appearance: none;
-      border: 1px solid #2a3347;
-      background: #141a24;
-      color: #eef2ff;
-      padding: 8px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform .02s ease, background .2s ease, border-color .2s ease;
-    }
-
-    button:hover {
-      background: #1a2231;
-      border-color: #364157;
-    }
-
-    button:active {
-      transform: translateY(1px);
-    }
-
-    /* Animation du bouton d'enregistrement */
-    #recordVideo {
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      background: #141a24;
-      --progress: 0%;
-    }
-
-    #recordVideo.recording {
-      color: #ffffff;
-      cursor: not-allowed;
-      background: #141a24;
-      /* Fond de base */
-    }
-
-    #recordVideo::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: var(--progress, 0%);
-      background: linear-gradient(90deg, #ff4444, #ff6666);
-      transition: none;
-      /* Pas de transition CSS, contrôlé par JS */
-      z-index: 0;
-      /* Au-dessus du fond mais sous le texte */
-    }
-
-    #recordVideo span {
-      position: relative;
-      z-index: 1;
-      /* Texte au-dessus de l'animation */
-    }
-
-    .stack {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .help {
-      color: #93a0bb;
-      font-size: 12px;
-      margin-top: 6px;
-    }
-
-    .sep {
-      height: 1px;
-      background: #1e2431;
-      margin: 10px 0;
-      border-radius: 1px;
-    }
-
-    .notice {
-      font-size: 12px;
-      color: #aab4cc;
-    }
-
-    .tight {
-      margin-top: -2px;
-    }
-
-    #footer {
-      position: fixed;
-      bottom: 10px;
-      left: 16px;
-      z-index: 5;
-      color: #9da8c4;
-      font-size: 12px;
-    }
-
-    canvas {
-      display: block;
-      border-radius: 8px;
-    }
-
-    body {
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      min-height: 100vh;
-    }
-
-    /* Intro splash screen */
-    #introSplash {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease-out;
-    }
-
-    #introSplash img {
-      max-width: 80%;
-      max-height: 80%;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    }
-
-    #introSplash.fade-out {
-      opacity: 0;
-    }
-
-    /* Styles pour mobile */
-    @media (max-width: 768px) {
       #ui {
-        top: 8px;
-        left: 8px;
-        right: 8px;
-        max-width: none;
-        width: calc(100% - 16px);
-        max-height: calc(100vh - 16px);
-        padding: 8px 10px;
-      }
-
-      .row {
-        margin: 6px 0;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-      }
-
-      .row label {
-        min-width: auto;
-        font-size: 13px;
-      }
-
-      .stack {
-        flex-direction: column;
-        width: 100%;
-      }
-
-      .stack button {
-        width: 100%;
-        margin-bottom: 4px;
-      }
-
-      .chips {
-        max-height: 60px;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 10;
+        background: color-mix(in srgb, var(--panel-bg) 88%, #000 12%);
+        backdrop-filter: blur(6px);
+        border: 1px solid #222833;
+        border-radius: 12px;
+        padding: 12px 14px;
+        max-width: 360px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+        user-select: none;
+        max-height: calc(100vh - 32px);
         overflow-y: auto;
+      }
+
+      #ui header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        cursor: grab;
+      }
+
+      #ui.dragging header {
+        cursor: grabbing;
+      }
+
+      #ui h2 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      #toggleSettings {
+        appearance: none;
+        border: 1px solid #2a3347;
+        background: #141a24;
+        color: #eef2ff;
+        padding: 6px 8px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      #toggleSettings:hover {
+        background: #1a2231;
+        border-color: #364157;
+      }
+
+      #toggleSettings:active {
+        transform: translateY(1px);
+      }
+
+      .toggle-arrow {
+        transition: transform 0.28s ease;
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      #toggleSettings[aria-expanded="true"] .toggle-arrow {
+        transform: rotate(180deg);
+      }
+
+      #settingsWrap {
+        overflow: hidden;
+        transition: grid-template-rows .28s ease, opacity .18s ease;
+        display: grid;
+        grid-template-rows: 1fr;
+        opacity: 1;
+        margin-top: 10px;
+      }
+
+      #settingsWrap.collapsed {
+        grid-template-rows: 0fr;
+        opacity: .0;
       }
 
       #settingsInner {
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
+        min-height: 0;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <!-- Intro splash screen -->
-  <div id="introSplash">
-    <img id="introImage" src="" alt="Intro" />
-  </div>
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+        flex-wrap: wrap;
+      }
 
-  <div id="ui" role="region" aria-label="Controls">
-    <header id="uiHeader">
-      <h2>Circle Square Triangle</h2>
-      <button id="toggleSettings" aria-expanded="true" aria-controls="settingsWrap"
-        title="Show/Hide settings">Hide</button>
-    </header>
+      .row label {
+        min-width: 130px;
+        color: var(--muted);
+      }
 
-    <div id="settingsWrap">
-      <div id="settingsInner">
-        <div class="row">
-          <label for="cols">Grid (columns × rows)</label>
-          <input id="cols" type="number" min="1" max="100" step="1" value="12" />
-          <span>×</span>
-          <input id="rows" type="number" min="1" max="100" step="1" value="12" />
-        </div>
+      .row input[type="number"] {
+        width: 80px;
+      }
 
-        <div class="row">
-          <label for="padding">Cell padding</label>
-          <input id="padding" type="range" min="0" max="45" step="1" value="12" />
-          <span id="paddingVal" class="notice">12%</span>
-        </div>
+      .row input[type="range"] {
+        width: 160px;
+      }
 
-        <div class="row">
-          <label for="emptyProb">Empty cells</label>
-          <input id="emptyProb" type="range" min="0" max="1" step="0.01" value="0.25" />
-          <span id="emptyVal" class="notice">25%</span>
-        </div>
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
 
-        <div class="row">
-          <label for="bgColor">Background color</label>
-          <input id="bgColor" type="color" value="#0a0a0a" />
-          <span class="notice">used if no image</span>
-        </div>
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #1a1f2a;
+        border: 1px solid #273043;
+        font-size: 12px;
+      }
 
-        <div class="sep"></div>
+      .chip .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid #fff3;
+        position: relative;
+        transition: all 0.2s ease;
+      }
 
-        <div class="row">
-          <label for="presetSelector">Presets</label>
-          <select id="presetSelector">
-            <option value="0" selected>The worm</option>
-            <option value="1">The gradient</option>
-            <option value="2">dithergrid</option>
-            <option value="3">Custom</option>
-          </select>
-        </div>
+      .chip .swatch::after {
+        content: '×';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 10px;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+        line-height: 1;
+      }
 
-        <div class="sep"></div>
+      .chip:hover .swatch::after {
+        opacity: 1;
+      }
 
-        <div class="row">
-          <label for="canvasSize">Canvas size</label>
-          <select id="canvasSize">
-            <option value="0" selected>HD Landscape (1920×1080)</option>
-            <option value="1">Portrait (1080×1920)</option>
-            <option value="2">Square (1080×1080)</option>
-            <option value="3">4:5 (1080×1350)</option>
-          </select>
-        </div>
-        <div class="row">
-          <span id="canvasSizeInfo" class="notice">Current: 1920×1080 pixels</span>
-        </div>
+      .chip:hover .swatch {
+        background: rgba(0, 0, 0, 0.7) !important;
+      }
 
-        <div class="sep"></div>
+      button,
+      .btn {
+        appearance: none;
+        border: 1px solid #2a3347;
+        background: #141a24;
+        color: #eef2ff;
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform .02s ease, background .2s ease, border-color .2s ease;
+      }
 
-        <div class="row">
-          <label for="shapeMode">Select a shape</label>
-          <select id="shapeMode">
-            <option value="any" selected>Any (random)</option>
-            <option value="circle">Circle</option>
-            <option value="triangle">Triangle</option>
-            <option value="square">Square</option>
-          </select>
-        </div>
+      button:hover {
+        background: #1a2231;
+        border-color: #364157;
+      }
 
-        <div class="sep"></div>
+      button:active {
+        transform: translateY(1px);
+      }
 
-        <div class="row">
-          <label>Color palette</label>
-          <div class="chips" id="paletteChips"></div>
-          <div class="stack tight">
-            <input id="paletteInput" type="text" placeholder="#f94144, #f3722c, #f9c74f…"
-              style="flex:1; min-width:230px" />
-            <button id="applyPalette">Apply</button>
+      /* Animation du bouton d'enregistrement */
+      #recordVideo {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #141a24;
+        --progress: 0%;
+      }
+
+      #recordVideo.recording {
+        color: #ffffff;
+        cursor: not-allowed;
+        background: #141a24;
+        /* Fond de base */
+      }
+
+      #recordVideo::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: var(--progress, 0%);
+        background: linear-gradient(90deg, #ff4444, #ff6666);
+        transition: none;
+        /* Pas de transition CSS, contrôlé par JS */
+        z-index: 0;
+        /* Au-dessus du fond mais sous le texte */
+      }
+
+      #recordVideo span {
+        position: relative;
+        z-index: 1;
+        /* Texte au-dessus de l'animation */
+      }
+
+      .stack {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .help {
+        color: #93a0bb;
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .sep {
+        height: 1px;
+        background: #1e2431;
+        margin: 10px 0;
+        border-radius: 1px;
+      }
+
+      .notice {
+        font-size: 12px;
+        color: #aab4cc;
+      }
+
+      .tight {
+        margin-top: -2px;
+      }
+
+      #footer {
+        position: fixed;
+        bottom: 10px;
+        left: 16px;
+        z-index: 5;
+        color: #9da8c4;
+        font-size: 12px;
+      }
+
+      canvas {
+        display: block;
+        border-radius: 8px;
+      }
+
+      body {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        min-height: 100vh;
+      }
+
+      /* Intro splash screen */
+      #introSplash {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+
+      #introSplash img {
+        max-width: 80%;
+        max-height: 80%;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      }
+
+      #introSplash.fade-out {
+        opacity: 0;
+      }
+
+      /* Styles pour mobile */
+      @media (max-width: 768px) {
+        #ui {
+          top: 8px;
+          left: 8px;
+          right: 8px;
+          max-width: none;
+          width: calc(100% - 16px);
+          max-height: calc(100vh - 16px);
+          padding: 8px 10px;
+        }
+
+        .row {
+          margin: 6px 0;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+        }
+
+        .row label {
+          min-width: auto;
+          font-size: 13px;
+        }
+
+        .stack {
+          flex-direction: column;
+          width: 100%;
+        }
+
+        .stack button {
+          width: 100%;
+          margin-bottom: 4px;
+        }
+
+        .chips {
+          max-height: 60px;
+          overflow-y: auto;
+        }
+
+        #settingsInner {
+          max-height: calc(100vh - 120px);
+          overflow-y: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Intro splash screen -->
+    <div id="introSplash">
+      <img id="introImage" src="" alt="Intro" />
+    </div>
+
+    <div id="ui" role="region" aria-label="Controls">
+      <header id="uiHeader">
+        <h2>Circle Square Triangle</h2>
+        <button id="toggleSettings" aria-expanded="true" aria-controls="settingsWrap" title="Show/Hide settings">
+          <span class="toggle-text">Hide</span>
+          <span class="toggle-arrow">▼</span>
+        </button>
+      </header>
+
+      <div id="settingsWrap">
+        <div id="settingsInner">
+          <div class="row">
+            <label for="cols">Grid (columns × rows)</label>
+            <input id="cols" type="number" min="1" max="100" step="1" value="12" />
+            <span>×</span>
+            <input id="rows" type="number" min="1" max="100" step="1" value="12" />
           </div>
-          <div class="stack tight">
-            <input id="colorPicker" type="color" />
-            <button id="addColor">+ Add</button>
-            <button id="shufflePalette">Shuffle</button>
-            <button id="clearPalette">Clear</button>
+
+          <div class="row">
+            <label for="padding">Cell padding</label>
+            <input id="padding" type="range" min="0" max="45" step="1" value="12" />
+            <span id="paddingVal" class="notice">12%</span>
           </div>
-          <div class="help">Enter hex values separated by commas (e.g. <span class="notice">#e63946, #457b9d,
-              #a8dadc</span>)</div>
+
+          <div class="row">
+            <label for="emptyProb">Empty cells</label>
+            <input id="emptyProb" type="range" min="0" max="1" step="0.01" value="0.25" />
+            <span id="emptyVal" class="notice">25%</span>
+          </div>
+
+          <div class="row">
+            <label for="bgColor">Background color</label>
+            <input id="bgColor" type="color" value="#0a0a0a" />
+            <span class="notice">used if no image</span>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <label for="presetSelector">Presets</label>
+            <select id="presetSelector">
+              <option value="0" selected>The worm</option>
+              <option value="1">The gradient</option>
+              <option value="2">dithergrid</option>
+              <option value="3">Custom</option>
+            </select>
+            <div class="help">To use only colors, use the custom preset.</div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <label for="canvasSize">Canvas size</label>
+            <select id="canvasSize">
+              <option value="0" selected>HD Landscape (1920×1080)</option>
+              <option value="1">Portrait (1080×1920)</option>
+              <option value="2">Square (1080×1080)</option>
+              <option value="3">4:5 (1080×1350)</option>
+            </select>
+          </div>
+          <div class="row">
+            <span id="canvasSizeInfo" class="notice">Current: 1920×1080 pixels</span>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <label for="shapeMode">Select a shape</label>
+            <select id="shapeMode">
+              <option value="any" selected>Any (random)</option>
+              <option value="circle">Circle</option>
+              <option value="triangle">Triangle</option>
+              <option value="square">Square</option>
+            </select>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <label>Color palette</label>
+            <div class="chips" id="paletteChips"></div>
+            <div class="stack tight">
+              <input id="paletteInput" type="text" placeholder="#f94144, #f3722c, #f9c74f…"
+                style="flex:1; min-width:230px" />
+              <button id="applyPalette">Apply</button>
+            </div>
+            <div class="stack tight">
+              <input id="colorPicker" type="color" />
+              <button id="addColor">+ Add</button>
+              <button id="shufflePalette">Shuffle</button>
+              <button id="clearPalette">Clear</button>
+            </div>
+            <div class="help">Enter hex values separated by commas (e.g. <span class="notice">#e63946, #457b9d,
+                #a8dadc</span>)</div>
+          </div>
+
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <label for="bgImg">Background image</label>
+            <input id="bgImg" type="file" accept="image/*" />
+          </div>
+          <!-- <div class="help">The image covers the full window (cover). The grid is drawn on top.</div> -->
+
+          <div class="sep"></div>
+
+          <div class="stack">
+            <button id="regen">Regenerate</button>
+            <button id="download">Download PNG</button>
+            <button id="recordVideo"><span>Record 10s Video</span></button>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            A web based tool by <a href="https://nicolastilly.fr/">Nicolas Tilly</a> /
+            <a href="https://github.com/nicolastilly/Circle-Square-Triangle">GitHub repository</a>
+            Version 2.0.0
+          </div>
+
+
         </div>
-
-
-        <div class="sep"></div>
-
-        <div class="row">
-          <label for="bgImg">Background image</label>
-          <input id="bgImg" type="file" accept="image/*" />
-        </div>
-        <div class="help">The image covers the full window (cover). The grid is drawn on top.</div>
-
-        <div class="sep"></div>
-
-        <div class="stack">
-          <button id="regen">Regenerate</button>
-          <button id="download">Download PNG</button>
-          <button id="recordVideo"><span>Record 10s Video</span></button>
-        </div>
-
-        <div class="sep"></div>
-
-        <div class="row">
-          A web based tool by <a href="https://nicolastilly.fr/">Nicolas Tilly</a> /
-          <a href="https://github.com/nicolastilly/Circle-Square-Triangle">GitHub repository</a>
-          Version 2.0.0
-        </div>
-
-
       </div>
     </div>
-  </div>
 
-  <!-- <div id="footer">
+    <!-- <div id="footer">
       Nicolas Tilly
     </div> -->
 
-  <!-- Intro script -->
-  <script>
-    (function () {
-      // Images disponibles dans le dossier intro
-      const introImages = [
-        'intro/circle.jpeg',
-        'intro/square.jpeg',
-        'intro/triangle.jpeg'
-      ];
+    <!-- Intro script -->
+    <script>
+      (function () {
+        // Images disponibles dans le dossier intro
+        const introImages = [
+          'intro/circle.jpeg',
+          'intro/square.jpeg',
+          'intro/triangle.jpeg'
+        ];
 
-      // Choisir une image au hasard
-      const randomImage = introImages[Math.floor(Math.random() * introImages.length)];
+        // Choisir une image au hasard
+        const randomImage = introImages[Math.floor(Math.random() * introImages.length)];
 
-      // Définir l'image source
-      const introImg = document.getElementById('introImage');
-      const introSplash = document.getElementById('introSplash');
+        // Définir l'image source
+        const introImg = document.getElementById('introImage');
+        const introSplash = document.getElementById('introSplash');
 
-      if (introImg && introSplash) {
-        introImg.src = randomImage;
+        if (introImg && introSplash) {
+          introImg.src = randomImage;
 
-        // Attendre 1 seconde puis commencer le fade
-        setTimeout(() => {
-          introSplash.classList.add('fade-out');
-
-          // Supprimer complètement l'élément après le fade (0.5s)
+          // Attendre 1 seconde puis commencer le fade
           setTimeout(() => {
-            introSplash.remove();
-          }, 500);
-        }, 1000);
-      }
-    })();
-  </script>
+            introSplash.classList.add('fade-out');
 
-  <!-- Sketch -->
-  <script src="sketch.js"></script>
+            // Supprimer complètement l'élément après le fade (0.5s)
+            setTimeout(() => {
+              introSplash.remove();
+            }, 500);
+          }, 1000);
+        }
+      })();
+    </script>
 
-  <!-- Toggle script -->
-  <script>
-    (function () {
-      const btn = document.getElementById('toggleSettings');
-      const wrap = document.getElementById('settingsWrap');
-      const key = 'ui.collapsed';
+    <!-- Sketch -->
+    <script src="sketch.js"></script>
 
-      // Détecter si on est sur mobile
-      const isMobile = window.innerWidth <= 768;
+    <!-- Toggle script -->
+    <script>
+      (function () {
+        const btn = document.getElementById('toggleSettings');
+        const wrap = document.getElementById('settingsWrap');
+        const key = 'ui.collapsed';
 
-      // Sur mobile, fermer automatiquement les settings au démarrage
-      const saved = localStorage.getItem(key);
-      if (saved === 'true' || isMobile) {
-        wrap.classList.add('collapsed');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.textContent = 'Show';
-      }
+        // Détecter si on est sur mobile
+        const isMobile = window.innerWidth <= 768;
 
-      btn.addEventListener('click', () => {
-        const isCollapsed = wrap.classList.toggle('collapsed');
-        btn.setAttribute('aria-expanded', String(!isCollapsed));
-        btn.textContent = isCollapsed ? 'Show' : 'Hide';
-        localStorage.setItem(key, String(isCollapsed));
-      });
-
-      // Gérer le redimensionnement de la fenêtre
-      window.addEventListener('resize', () => {
-        const isMobileNow = window.innerWidth <= 768;
-        if (isMobileNow && !wrap.classList.contains('collapsed')) {
-          // Fermer automatiquement sur mobile
+        // Sur mobile, fermer automatiquement les settings au démarrage
+        const saved = localStorage.getItem(key);
+        const toggleText = btn.querySelector('.toggle-text');
+        if (saved === 'true' || isMobile) {
           wrap.classList.add('collapsed');
           btn.setAttribute('aria-expanded', 'false');
-          btn.textContent = 'Show';
+          toggleText.textContent = 'Show';
         }
-      });
-    })();
-  </script>
 
-  <!-- Drag script -->
-  <script>
-    (function () {
-      const panel = document.getElementById('ui');
-      const handle = document.getElementById('uiHeader');
-      const posKey = 'ui.position';
-      let startX = 0, startY = 0;
-      let panelX = 16, panelY = 16;
-      let dragging = false;
+        btn.addEventListener('click', () => {
+          const isCollapsed = wrap.classList.toggle('collapsed');
+          btn.setAttribute('aria-expanded', String(!isCollapsed));
+          toggleText.textContent = isCollapsed ? 'Show' : 'Hide';
+          localStorage.setItem(key, String(isCollapsed));
+        });
 
-      try {
-        const saved = JSON.parse(localStorage.getItem(posKey) || 'null');
-        if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
-          panelX = saved.x; panelY = saved.y;
+        // Gérer le redimensionnement de la fenêtre
+        window.addEventListener('resize', () => {
+          const isMobileNow = window.innerWidth <= 768;
+          if (isMobileNow && !wrap.classList.contains('collapsed')) {
+            // Fermer automatiquement sur mobile
+            wrap.classList.add('collapsed');
+            btn.setAttribute('aria-expanded', 'false');
+            toggleText.textContent = 'Show';
+          }
+        });
+      })();
+    </script>
+
+    <!-- Drag script -->
+    <script>
+      (function () {
+        const panel = document.getElementById('ui');
+        const handle = document.getElementById('uiHeader');
+        const posKey = 'ui.position';
+        let startX = 0, startY = 0;
+        let panelX = 16, panelY = 16;
+        let dragging = false;
+
+        try {
+          const saved = JSON.parse(localStorage.getItem(posKey) || 'null');
+          if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
+            panelX = saved.x; panelY = saved.y;
+          }
+        } catch (e) { }
+
+        function clamp(val, min, max) { return Math.min(Math.max(val, min), max); }
+
+        function applyPosition() {
+          const maxX = window.innerWidth - panel.offsetWidth - 8;
+          const maxY = window.innerHeight - panel.offsetHeight - 8;
+          panelX = clamp(panelX, 8, Math.max(8, maxX));
+          panelY = clamp(panelY, 8, Math.max(8, maxY));
+          panel.style.left = panelX + 'px';
+          panel.style.top = panelY + 'px';
         }
-      } catch (e) { }
 
-      function clamp(val, min, max) { return Math.min(Math.max(val, min), max); }
-
-      function applyPosition() {
-        const maxX = window.innerWidth - panel.offsetWidth - 8;
-        const maxY = window.innerHeight - panel.offsetHeight - 8;
-        panelX = clamp(panelX, 8, Math.max(8, maxX));
-        panelY = clamp(panelY, 8, Math.max(8, maxY));
-        panel.style.left = panelX + 'px';
-        panel.style.top = panelY + 'px';
-      }
-
-      applyPosition();
-      window.addEventListener('resize', applyPosition);
-
-      handle.addEventListener('pointerdown', (e) => {
-        if (e.target && e.target.id === 'toggleSettings') return;
-        dragging = true;
-        panel.classList.add('dragging');
-        startX = e.clientX - panelX;
-        startY = e.clientY - panelY;
-        handle.setPointerCapture(e.pointerId);
-      });
-
-      handle.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
-        panelX = e.clientX - startX;
-        panelY = e.clientY - startY;
         applyPosition();
-      });
+        window.addEventListener('resize', applyPosition);
 
-      handle.addEventListener('pointerup', (e) => {
-        if (!dragging) return;
-        dragging = false;
-        panel.classList.remove('dragging');
-        try { localStorage.setItem(posKey, JSON.stringify({ x: panelX, y: panelY })); } catch (err) { }
-        handle.releasePointerCapture(e.pointerId);
-      });
+        handle.addEventListener('pointerdown', (e) => {
+          if (e.target && (e.target.id === 'toggleSettings' || e.target.closest('#toggleSettings'))) return;
+          dragging = true;
+          panel.classList.add('dragging');
+          startX = e.clientX - panelX;
+          startY = e.clientY - panelY;
+          handle.setPointerCapture(e.pointerId);
+        });
 
-      handle.addEventListener('pointercancel', () => {
-        if (!dragging) return;
-        dragging = false;
-        panel.classList.remove('dragging');
-        try { localStorage.setItem(posKey, JSON.stringify({ x: panelX, y: panelY })); } catch (err) { }
-      });
-    })();
-  </script>
-</body>
+        handle.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          panelX = e.clientX - startX;
+          panelY = e.clientY - startY;
+          applyPosition();
+        });
+
+        handle.addEventListener('pointerup', (e) => {
+          if (!dragging) return;
+          dragging = false;
+          panel.classList.remove('dragging');
+          try { localStorage.setItem(posKey, JSON.stringify({ x: panelX, y: panelY })); } catch (err) { }
+          handle.releasePointerCapture(e.pointerId);
+        });
+
+        handle.addEventListener('pointercancel', () => {
+          if (!dragging) return;
+          dragging = false;
+          panel.classList.remove('dragging');
+          try { localStorage.setItem(posKey, JSON.stringify({ x: panelX, y: panelY })); } catch (err) { }
+        });
+      })();
+    </script>
+  </body>
 
 </html>
