@@ -18,6 +18,20 @@
     <script src="https://cdn.jsdelivr.net/npm/p5.capture@1.6.0/dist/p5.capture.umd.min.js"></script>
 
     <style>
+      @font-face {
+        font-family: 'InclusiveSans';
+        src: url('fonts/InclusiveSans-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: 'InclusiveSans';
+        src: url('fonts/InclusiveSans-SemiBold.ttf') format('truetype');
+        font-weight: 600;
+        font-style: normal;
+      }
+
       :root {
         --panel-bg: #0f1115;
         --panel-fg: #eaeef7;
@@ -71,6 +85,8 @@
       #ui h2 {
         margin: 0;
         font-size: 16px;
+        font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-weight: 600;
       }
 
       #toggleSettings {
@@ -84,6 +100,8 @@
         display: flex;
         align-items: center;
         gap: 6px;
+        font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-weight: 400;
       }
 
       #toggleSettings:hover {
@@ -134,6 +152,8 @@
       .row label {
         min-width: 130px;
         color: var(--muted);
+        font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-weight: 600;
       }
 
       .row input[type="number"] {
@@ -207,6 +227,8 @@
         border-radius: 10px;
         cursor: pointer;
         transition: transform .02s ease, background .2s ease, border-color .2s ease;
+        font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-weight: 400;
       }
 
       button:hover {
@@ -216,6 +238,16 @@
 
       button:active {
         transform: translateY(1px);
+      }
+
+      select {
+        font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-weight: 400;
+      }
+
+      select option {
+        font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-weight: 400;
       }
 
       /* Animation du bouton d'enregistrement */
@@ -264,6 +296,8 @@
         color: #93a0bb;
         font-size: 12px;
         margin-top: 6px;
+        font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-weight: 400;
       }
 
       .sep {
@@ -350,6 +384,8 @@
         .row label {
           min-width: auto;
           font-size: 13px;
+          font-family: 'InclusiveSans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+          font-weight: 600;
         }
 
         .stack {
@@ -496,7 +532,7 @@
 
           <div class="sep"></div>
 
-          <div class="row">
+          <div class="row help">
             A web based tool by <a href="https://nicolastilly.fr/">Nicolas Tilly</a> /
             <a href="https://github.com/nicolastilly/Circle-Square-Triangle">GitHub repository</a>
             Version 2.0.0
