@@ -229,8 +229,12 @@ function applyPreset(presetIndex) {
     // Pour Custom, utiliser la palette par défaut des params globaux
     params.palette = ['#ffffff', '#ff0000', '#0015ff', '#20ed09', '#fbff00'];
   } else {
-    // Pour les autres presets, utiliser une seule couleur
-    params.palette = [preset.fillColor];
+    // Pour les autres presets, commencer avec la couleur du preset
+    // mais permettre d'ajouter d'autres couleurs
+    if (params.palette.length === 0 || params.palette[0] !== preset.fillColor) {
+      params.palette = [preset.fillColor];
+    }
+    // Si la palette contient déjà la couleur du preset, la garder telle quelle
   }
 
   // Charger l'image de fond si définie
@@ -528,8 +532,12 @@ function drawCompositionOnCanvas(canvas, w, h) {
         // Pour Custom, choisir aléatoirement dans la palette
         canvas.fill(randomChoice(params.palette));
       } else {
-        // Pour les autres presets, utiliser la première couleur
-        canvas.fill(params.palette[0]);
+        // Pour les autres presets, utiliser toutes les couleurs de la palette
+        if (params.palette.length > 1) {
+          canvas.fill(randomChoice(params.palette));
+        } else {
+          canvas.fill(params.palette[0]);
+        }
       }
 
       let shape;
@@ -692,8 +700,12 @@ function draw() {
         // Pour Custom, choisir aléatoirement dans la palette
         fill(randomChoice(params.palette));
       } else {
-        // Pour les autres presets, utiliser la première couleur
-        fill(params.palette[0]);
+        // Pour les autres presets, utiliser toutes les couleurs de la palette
+        if (params.palette.length > 1) {
+          fill(randomChoice(params.palette));
+        } else {
+          fill(params.palette[0]);
+        }
       }
 
       let shape;
