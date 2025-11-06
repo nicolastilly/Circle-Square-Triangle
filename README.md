@@ -6,7 +6,7 @@ Graphic composition generator inspired by [Bruno Munari's](https://archive.org/d
 
 ## The tool
 
-This tool is coded with p5js and is used to create a graphic composition of simple colored shapes with an image in the background. The size of the composition depends on the size of the browser window.
+This tool is coded with p5js and is used to create a graphic composition of simple colored shapes with an image in the background.
 
 The tool's parameters are as follows:
 
@@ -15,8 +15,9 @@ The tool's parameters are as follows:
 - Addition and removal of background colors for shapes
 - Addition or removal of empty spaces in the grid
 - Drag and drop the settings window
-- Choose all 4 shapes or just one
+- Choose all 3 shapes or just one
 - Downloading of the final composition
+- Download a 10-second video
   
 
 ![video](/motion.gif)
